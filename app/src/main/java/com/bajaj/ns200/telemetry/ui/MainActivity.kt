@@ -7,14 +7,13 @@ import android.animation.ValueAnimator
 import android.bluetooth.le.ScanResult
 import android.content.pm.PackageManager
 import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
+import android.view.animation.AnticipateOvershootInterpolator
 import android.view.animation.DecelerateInterpolator
-import android.widget.ProgressBar
-import android.widget.TextView
+import android.view.animation.OvershootInterpolator
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -33,6 +32,14 @@ import kotlinx.coroutines.launch
 class MainActivity : AppCompatActivity() {
     private var pulseAnimator: ObjectAnimator? = null
     private var speedAnimator: ValueAnimator? = null
+    private var gearAnimator: ValueAnimator? = null
+    private var shimmerAnimator: ValueAnimator? = null
+    private var rpmAnimator: ValueAnimator? = null
+    private var fuelAnimator: ValueAnimator? = null
+    private var entered = false
+    private var lastGear: Int? = null
+    private var lastRpm: Int? = null
+    private var lastFuel: Int? = null
     private lateinit var binding: ActivityMainBinding
     private lateinit var viewModel: MainViewModel
     private lateinit var deviceAdapter: DeviceAdapter
@@ -69,6 +76,30 @@ class MainActivity : AppCompatActivity() {
         setupViews()
         setupRecyclerView()
         observeViewModel()
+        animateEntrance()
+    }
+
+    private fun animateEntrance() {
+        if (entered) return
+        entered = true
+        val cards = listOf(
+            binding.cardStatus to 0L,
+            binding.buttonScan to 80L,
+            binding.cardDevices to 160L,
+            binding.cardTelemetry to 240L
+        )
+        cards.forEach { (view, delay) ->
+            view.alpha = 0f
+            view.translationY = 60f
+            view.postDelayed({
+                view.animate()
+                    .alpha(1f)
+                    .translationY(0f)
+                    .setDuration(500)
+                    .setInterpolator(OvershootInterpolator(0.8f))
+                    .start()
+            }, delay)
+        }
     }
 
     private fun setupViews() {
@@ -103,10 +134,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateUi(state: MainUiState) {
         binding.textConnectionStatus.text = state.connectionStatus
+
+        val statusColor = if (state.isConnected) R.color.connected
+        else if (state.isScanning) R.color.accent
+        else R.color.disconnected
+
         binding.textBluetoothStatus.text = if (state.isBluetoothEnabled) "BT On" else "BT Off"
         binding.textBluetoothStatus.setTextColor(
-            if (state.isBluetoothEnabled) ContextCompat.getColor(this, R.color.connected)
-            else ContextCompat.getColor(this, R.color.disconnected)
+            ContextCompat.getColor(this, if (state.isBluetoothEnabled) R.color.connected else R.color.disconnected)
         )
 
         val wasConnected = pulseAnimator?.isStarted == true
@@ -116,6 +151,16 @@ class MainActivity : AppCompatActivity() {
         } else {
             binding.viewStatusDot.setBackgroundResource(R.drawable.circle_status_disconnected)
             stopPulseAnimation()
+        }
+
+        ObjectAnimator.ofInt(
+            binding.cardStatus, "cardBackgroundColor",
+            ContextCompat.getColor(this, R.color.surface_card),
+            ContextCompat.getColor(this, statusColor)
+        ).apply {
+            setEvaluator(ArgbEvaluator())
+            duration = 400
+            start()
         }
 
         animateVisibility(binding.buttonScan, !state.isScanning)
@@ -129,23 +174,33 @@ class MainActivity : AppCompatActivity() {
         deviceAdapter.submitList(state.discoveredDevices)
         animateVisibility(binding.textNoDevices, state.discoveredDevices.isEmpty() && !state.isScanning)
 
+        if (state.isScanning) startShimmer() else stopShimmer()
+
         val data = state.telemetryData
         val newSpeed = data.speed
         if (newSpeed != null) {
             animateSpeed(newSpeed)
         } else {
+            speedAnimator?.cancel()
             binding.textSpeed.text = "--"
         }
 
-        val rpm = data.rpm
-        binding.textRpm.text = rpm?.let { "$it RPM" } ?: "-- RPM"
-        binding.progressRpm.progress = (rpm ?: 0).coerceIn(0, 12000)
+        val rpm = data.rpm ?: 0
+        binding.textRpm.text = data.rpm?.let { "$it RPM" } ?: "-- RPM"
+        animateRpmProgress(rpm.coerceIn(0, 12000))
 
-        val fuel = data.fuelLevelPercent
-        binding.textFuel.text = fuel?.let { "${it.toInt()}%" } ?: "--%"
-        binding.progressFuel.progress = (fuel?.toInt() ?: 0).coerceIn(0, 100)
+        val fuel = (data.fuelLevelPercent?.toInt() ?: 0).coerceIn(0, 100)
+        animateFuelProgress(fuel)
 
-        binding.textGear.text = data.gearPosition?.let { if (it == 0) "N" else it.toString() } ?: "--"
+        binding.textFuel.text = data.fuelLevelPercent?.let { "${it.toInt()}%" } ?: "--%"
+
+        val currentGear = data.gearPosition
+        if (currentGear != null && currentGear != lastGear) {
+            animateGearChange(currentGear)
+            lastGear = currentGear
+        }
+        binding.textGear.text = if (currentGear == 0) "N" else currentGear?.toString() ?: "--"
+
         binding.textTemp.text = data.temperatureCelsius?.let { "${it.toInt()}°C" } ?: "--°C"
         binding.textOdometer.text = data.odometerKm?.let { "${"%.1f".format(it)} km" } ?: "-- km"
 
@@ -171,14 +226,72 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun animateGearChange(@Suppress("UNUSED_PARAMETER") gear: Int) {
+        gearAnimator?.cancel()
+        binding.textGear.scaleX = 0.3f
+        binding.textGear.scaleY = 0.3f
+        binding.textGear.animate()
+            .scaleX(1.2f)
+            .scaleY(1.2f)
+            .setDuration(200)
+            .setInterpolator(AnticipateOvershootInterpolator())
+            .withEndAction {
+                binding.textGear.animate()
+                    .scaleX(1f)
+                    .scaleY(1f)
+                    .setDuration(100)
+                    .start()
+            }
+            .start()
+    }
+
+    private fun animateRpmProgress(target: Int) {
+        if (lastRpm == target) return
+        rpmAnimator?.cancel()
+        rpmAnimator = ValueAnimator.ofInt(binding.progressRpm.progress, target).apply {
+            duration = 400
+            interpolator = DecelerateInterpolator()
+            addUpdateListener { anim ->
+                binding.progressRpm.progress = anim.animatedValue as Int
+            }
+            start()
+        }
+        lastRpm = target
+    }
+
+    private fun animateFuelProgress(target: Int) {
+        if (lastFuel == target) return
+        fuelAnimator?.cancel()
+        fuelAnimator = ValueAnimator.ofInt(binding.progressFuel.progress, target).apply {
+            duration = 400
+            interpolator = DecelerateInterpolator()
+            addUpdateListener { anim ->
+                binding.progressFuel.progress = anim.animatedValue as Int
+            }
+            start()
+        }
+        lastFuel = target
+    }
+
     private fun animateVisibility(view: View, visible: Boolean) {
         if (visible && view.visibility != View.VISIBLE) {
             view.alpha = 0f
+            view.translationY = 20f
             view.visibility = View.VISIBLE
-            view.animate().alpha(1f).setDuration(300).setInterpolator(DecelerateInterpolator()).start()
+            view.animate()
+                .alpha(1f)
+                .translationY(0f)
+                .setDuration(350)
+                .setInterpolator(DecelerateInterpolator())
+                .start()
         } else if (!visible && view.visibility == View.VISIBLE) {
-            view.animate().alpha(0f).setDuration(200).setInterpolator(AccelerateDecelerateInterpolator())
-                .withEndAction { view.visibility = View.GONE }.start()
+            view.animate()
+                .alpha(0f)
+                .translationY(-10f)
+                .setDuration(200)
+                .setInterpolator(AccelerateDecelerateInterpolator())
+                .withEndAction { view.visibility = View.GONE }
+                .start()
         }
     }
 
@@ -191,10 +304,14 @@ class MainActivity : AppCompatActivity() {
         }
         speedAnimator?.cancel()
         speedAnimator = ValueAnimator.ofFloat(currentSpeed, targetSpeed).apply {
-            duration = 500
+            duration = 600
             interpolator = DecelerateInterpolator()
             addUpdateListener { anim ->
-                binding.textSpeed.text = formatSpeed(anim.animatedValue as Float)
+                val v = anim.animatedValue as Float
+                binding.textSpeed.text = formatSpeed(v)
+                val fraction = v / 160f
+                val alpha = (0.3f + fraction * 0.7f).coerceIn(0.3f, 1f)
+                binding.textSpeed.alpha = alpha
             }
             start()
         }
@@ -202,11 +319,16 @@ class MainActivity : AppCompatActivity() {
 
     private fun startPulseAnimation() {
         pulseAnimator?.cancel()
-        pulseAnimator = ObjectAnimator.ofFloat(binding.viewStatusDot, "alpha", 1f, 0.4f).apply {
-            duration = 800
+        pulseAnimator = ObjectAnimator.ofFloat(binding.viewStatusDot, "scaleX", 1f, 1.5f).apply {
+            duration = 700
             repeatMode = ValueAnimator.REVERSE
             repeatCount = ValueAnimator.INFINITE
             interpolator = AccelerateDecelerateInterpolator()
+            addUpdateListener { anim ->
+                val v = anim.animatedValue as Float
+                binding.viewStatusDot.scaleY = v
+                binding.viewStatusDot.alpha = 1f - (v - 1f) * 0.8f
+            }
             start()
         }
     }
@@ -214,11 +336,45 @@ class MainActivity : AppCompatActivity() {
     private fun stopPulseAnimation() {
         pulseAnimator?.cancel()
         pulseAnimator = null
-        binding.viewStatusDot.alpha = 1f
+        binding.viewStatusDot.animate()
+            .scaleX(1f).scaleY(1f).alpha(1f)
+            .setDuration(200)
+            .start()
+    }
+
+    private fun startShimmer() {
+        if (shimmerAnimator?.isRunning == true) return
+        val overlay = binding.root
+        shimmerAnimator = ValueAnimator.ofFloat(-1f, 2f).apply {
+            duration = 1500
+            repeatCount = ValueAnimator.INFINITE
+            interpolator = AccelerateDecelerateInterpolator()
+            addUpdateListener { anim ->
+                val fraction = anim.animatedValue as Float
+                overlay.elevation = 2f + fraction * 4f
+            }
+            start()
+        }
+    }
+
+    private fun stopShimmer() {
+        shimmerAnimator?.cancel()
+        shimmerAnimator = null
+        binding.root.elevation = 0f
     }
 
     private fun formatSpeed(speed: Float): String {
         return if (speed == speed.toInt().toFloat()) speed.toInt().toString() else "${"%.1f".format(speed)}"
+    }
+
+    override fun onDestroy() {
+        pulseAnimator?.cancel()
+        speedAnimator?.cancel()
+        gearAnimator?.cancel()
+        shimmerAnimator?.cancel()
+        rpmAnimator?.cancel()
+        fuelAnimator?.cancel()
+        super.onDestroy()
     }
 
     private fun checkPermissionsAndScan(shouldScan: Boolean) {

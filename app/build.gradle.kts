@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace = "com.bajaj.ns200.telemetry"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.bajaj.ns200.telemetry"
         minSdk = 21
-        targetSdk = 34
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0.0"
     }

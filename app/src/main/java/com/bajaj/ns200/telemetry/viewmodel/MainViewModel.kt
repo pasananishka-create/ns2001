@@ -222,6 +222,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 Ns200BluetoothConfig.DEVICE_INFO_SERVICE_UUID,
                 Ns200BluetoothConfig.MODEL_NUMBER_CHAR_UUID
             )
+            connectionManager.enableNotifications(
+                Ns200BluetoothConfig.NS200_TELEMETRY_SERVICE_UUID,
+                Ns200BluetoothConfig.NS200_TELEMETRY_CHAR_UUID
+            )
+            connectionManager.readCharacteristic(
+                Ns200BluetoothConfig.NS200_TELEMETRY_SERVICE_UUID,
+                Ns200BluetoothConfig.NS200_TELEMETRY_CHAR_UUID
+            )
         }
     }
 

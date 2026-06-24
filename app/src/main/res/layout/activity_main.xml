@@ -61,10 +61,11 @@
             android:layout_marginTop="8dp"
             android:text="Disconnect"
             android:visibility="gone"
+            app:strokeColor="@color/accent"
+            app:strokeWidth="1dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/buttonConnect"
-            app:layout_constraintTop_toBottomOf="@+id/buttonScan"
-            style="@style/Widget.Material3.Button.Outlined" />
+            app:layout_constraintTop_toBottomOf="@+id/buttonScan" />
 
         <TextView
             android:id="@+id/textDevicesHeader"

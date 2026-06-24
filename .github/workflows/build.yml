@@ -22,13 +22,16 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Accept Android SDK licenses
+      - name: Check Android SDK and install platform 36
         run: |
-          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null 2>&1 || true
-          yes | "$ANDROID_HOME/tools/bin/sdkmanager" --licenses > /dev/null 2>&1 || true
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          ls -la "$ANDROID_HOME/platforms/" 2>/dev/null || echo "No platforms dir"
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --list 2>/dev/null | grep "platforms;android-3" || true
+          echo "Installing platform android-36..."
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" 2>&1 || echo "Install failed (maybe already installed)"
 
       - name: Build debug APK
-        run: chmod +x gradlew && ./gradlew assembleDebug --stacktrace
+        run: chmod +x gradlew && ./gradlew assembleDebug --stacktrace --no-daemon 2>&1
 
       - name: Upload APK
         uses: actions/upload-artifact@v4

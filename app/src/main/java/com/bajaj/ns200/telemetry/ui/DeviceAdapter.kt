@@ -3,9 +3,11 @@ package com.bajaj.ns200.telemetry.ui
 import android.bluetooth.le.ScanResult
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.bajaj.ns200.telemetry.R
 import com.bajaj.ns200.telemetry.databinding.ItemDeviceBinding
 
 class DeviceAdapter(
@@ -39,9 +41,9 @@ class DeviceAdapter(
                 textDeviceAddress.text = result.device.address
                 textDeviceRssi.text = "${result.rssi} dBm"
                 root.isSelected = isSelected
-                root.setBackgroundResource(
-                    if (isSelected) android.R.color.holo_blue_light
-                    else android.R.color.transparent
+                root.setCardBackgroundColor(
+                    if (isSelected) ContextCompat.getColor(root.context, R.color.primary_dark)
+                    else ContextCompat.getColor(root.context, R.color.surface)
                 )
                 root.setOnClickListener {
                     val prev = selectedPosition

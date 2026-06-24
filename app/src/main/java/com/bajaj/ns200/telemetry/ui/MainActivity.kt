@@ -15,6 +15,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bajaj.ns200.telemetry.R
 import com.bajaj.ns200.telemetry.databinding.ActivityMainBinding
 import com.bajaj.ns200.telemetry.viewmodel.MainUiState
 import com.bajaj.ns200.telemetry.viewmodel.MainViewModel
@@ -91,15 +92,21 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateUi(state: MainUiState) {
         binding.textConnectionStatus.text = state.connectionStatus
-        binding.textConnectionStatus.setTextColor(
-            if (state.isConnected) ContextCompat.getColor(this, android.R.color.holo_green_dark)
-            else ContextCompat.getColor(this, android.R.color.darker_gray)
+        binding.textBluetoothStatus.text = if (state.isBluetoothEnabled) "BT On" else "BT Off"
+        binding.textBluetoothStatus.setTextColor(
+            if (state.isBluetoothEnabled) ContextCompat.getColor(this, R.color.connected)
+            else ContextCompat.getColor(this, R.color.disconnected)
+        )
+        binding.viewStatusDot.setBackgroundResource(
+            if (state.isConnected) R.drawable.circle_status_connected
+            else R.drawable.circle_status_disconnected
         )
 
         binding.buttonScan.visibility = if (state.isScanning) View.GONE else View.VISIBLE
         binding.buttonStopScan.visibility = if (state.isScanning) View.VISIBLE else View.GONE
 
         val showConnect = !state.isScanning && !state.isConnected && state.discoveredDevices.isNotEmpty()
+        binding.layoutConnectButtons.visibility = if (showConnect || state.isConnected) View.VISIBLE else View.GONE
         binding.buttonConnect.visibility = if (showConnect) View.VISIBLE else View.GONE
         binding.buttonDisconnect.visibility = if (state.isConnected) View.VISIBLE else View.GONE
 
@@ -108,18 +115,13 @@ class MainActivity : AppCompatActivity() {
             if (state.discoveredDevices.isEmpty() && !state.isScanning) View.VISIBLE else View.GONE
 
         val data = state.telemetryData
-        if (state.isConnected) {
-            binding.cardTelemetry.visibility = View.VISIBLE
-            binding.textSpeed.text = data.speed?.let { "$it km/h" } ?: "-- km/h"
-            binding.textRpm.text = data.rpm?.let { "$it RPM" } ?: "-- RPM"
-            binding.textFuel.text = data.fuelLevelPercent?.let { "$it%" } ?: "--%"
-            binding.textGear.text = data.gearPosition?.let { if (it == 0) "N" else it.toString() } ?: "--"
-            binding.textTemp.text = data.temperatureCelsius?.let { "$it°C" } ?: "--°C"
-            binding.textOdometer.text = data.odometerKm?.let { "$it km" } ?: "-- km"
-            binding.textBatteryVoltage.text = data.batteryVoltage?.let { "$it V" } ?: "-- V"
-        } else {
-            binding.cardTelemetry.visibility = View.GONE
-        }
+        binding.textSpeed.text = data.speed?.let { formatSpeed(it) } ?: "--"
+        binding.textRpm.text = data.rpm?.let { "$it RPM" } ?: "-- RPM"
+        binding.textFuel.text = data.fuelLevelPercent?.let { "${it.toInt()}%" } ?: "--%"
+        binding.textGear.text = data.gearPosition?.let { if (it == 0) "N" else it.toString() } ?: "--"
+        binding.textTemp.text = data.temperatureCelsius?.let { "${it.toInt()}°C" } ?: "--°C"
+        binding.textOdometer.text = data.odometerKm?.let { "${"%.1f".format(it)} km" } ?: "-- km"
+        binding.textBatteryVoltage.text = data.batteryVoltage?.let { "${"%.1f".format(it)} V" } ?: "-- V"
 
         state.errorMessage?.let {
             Toast.makeText(this, it, Toast.LENGTH_LONG).show()
@@ -130,6 +132,10 @@ class MainActivity : AppCompatActivity() {
             binding.textDiscoveryLog.text = state.serviceDiscoveryLog.joinToString("\n")
             binding.cardDiscoveryLog.visibility = View.VISIBLE
         }
+    }
+
+    private fun formatSpeed(speed: Float): String {
+        return if (speed == speed.toInt().toFloat()) speed.toInt().toString() else "${"%.1f".format(speed)}"
     }
 
     private fun checkPermissionsAndScan(shouldScan: Boolean) {

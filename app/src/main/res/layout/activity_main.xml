@@ -3,114 +3,136 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true">
+    android:fillViewport="true"
+    android:background="@color/surface">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="16dp">
 
-        <TextView
-            android:id="@+id/textConnectionStatus"
+        <!-- Connection Status Bar -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardStatus"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="Disconnected"
-            android:textSize="16sp"
-            android:textStyle="bold"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="@color/surface_card"
+            app:cardCornerRadius="12dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="@color/primary_dark"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent">
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="12dp"
+                android:gravity="center_vertical">
+
+                <View
+                    android:id="@+id/viewStatusDot"
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:background="@drawable/circle_status_disconnected" />
+
+                <TextView
+                    android:id="@+id/textConnectionStatus"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="10dp"
+                    android:text="Disconnected"
+                    android:textColor="@color/on_surface"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/textBluetoothStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="BT Off"
+                    android:textColor="@color/on_surface_variant"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Action Buttons -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/buttonScan"
+            style="@style/Widget.Material3.Button.Tonal"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="12dp"
             android:text="Scan for Devices"
+            android:textAllCaps="false"
+            app:icon="@android:drawable/ic_menu_search"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textConnectionStatus" />
+            app:layout_constraintTop_toBottomOf="@+id/cardStatus" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/buttonStopScan"
+            style="@style/Widget.Material3.Button.Tonal"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="12dp"
             android:text="Stop Scan"
+            android:textAllCaps="false"
+            android:visibility="gone"
+            app:icon="@android:drawable/ic_menu_close_clear_cancel"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/cardStatus" />
+
+        <LinearLayout
+            android:id="@+id/layoutConnectButtons"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal"
             android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textConnectionStatus" />
+            app:layout_constraintTop_toBottomOf="@+id/buttonScan">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/buttonConnect"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Connect"
-            android:visibility="gone"
-            app:layout_constraintEnd_toStartOf="@+id/buttonDisconnect"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/buttonScan" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonConnect"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:text="Connect"
+                android:textAllCaps="false" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/buttonDisconnect"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Disconnect"
-            android:visibility="gone"
-            app:strokeColor="@color/accent"
-            app:strokeWidth="1dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/buttonConnect"
-            app:layout_constraintTop_toBottomOf="@+id/buttonScan" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonDisconnect"
+                style="@style/Widget.Material3.Button.Outlined"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:text="Disconnect"
+                android:textAllCaps="false"
+                app:strokeColor="@color/accent"
+                app:strokeWidth="1dp" />
+        </LinearLayout>
 
-        <TextView
-            android:id="@+id/textDevicesHeader"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Discovered Devices"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/buttonConnect" />
-
-        <TextView
-            android:id="@+id/textNoDevices"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:gravity="center"
-            android:text="No devices found. Tap Scan to start."
-            android:textColor="?android:attr/textColorSecondary"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textDevicesHeader" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerDevices"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:nestedScrollingEnabled="false"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textNoDevices" />
-
+        <!-- Device List -->
         <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cardTelemetry"
+            android:id="@+id/cardDevices"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:visibility="gone"
-            app:cardElevation="4dp"
+            android:layout_marginTop="12dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="@color/surface_card"
+            app:cardCornerRadius="12dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/recyclerDevices">
+            app:layout_constraintTop_toBottomOf="@+id/layoutConnectButtons">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -121,186 +143,267 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Telemetry Data"
-                    android:textSize="16sp"
+                    android:text="Discovered Devices"
+                    android:textColor="@color/metric_label"
+                    android:textSize="13sp"
                     android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/textNoDevices"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:text="No devices found. Tap Scan to start."
+                    android:textColor="@color/on_surface_variant"
+                    android:textSize="14sp" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerDevices"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:nestedScrollingEnabled="false" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Telemetry Dashboard -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardTelemetry"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="@color/surface_card"
+            app:cardCornerRadius="12dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/cardDevices">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <!-- Dashboard Header -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="TELEMETRY"
+                    android:textColor="@color/primary"
+                    android:textSize="12sp"
+                    android:letterSpacing="0.15"
+                    android:textStyle="bold" />
+
+                <!-- Speed Display -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/textSpeed"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="--"
+                        android:textColor="@color/speed_color"
+                        android:textSize="64sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:layout_marginTop="32dp"
+                        android:text="km/h"
+                        android:textColor="@color/metric_label"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
+                <!-- RPM Bar -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/textRpm"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="-- RPM"
+                        android:textColor="@color/rpm_color"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
 
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:layout_marginTop="8dp"
-                    android:background="?android:attr/listDivider" />
+                    android:layout_marginTop="12dp"
+                    android:background="@color/primary_dark" />
 
-                <LinearLayout
+                <!-- Metrics Grid -->
+                <GridLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:orientation="horizontal">
+                    android:layout_marginTop="12dp"
+                    android:columnCount="3">
 
+                    <!-- Fuel -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
+                        android:layout_columnWeight="1"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="4dp">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Speed"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/textSpeed"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="-- km/h" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="RPM"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/textRpm"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="-- RPM" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:orientation="horizontal">
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Fuel"
-                            android:textStyle="bold" />
+                            android:text="FUEL"
+                            android:textColor="@color/metric_label"
+                            android:textSize="10sp"
+                            android:letterSpacing="0.1" />
 
                         <TextView
                             android:id="@+id/textFuel"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="--%" />
+                            android:text="--%"
+                            android:textColor="@color/metric_value"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
                     </LinearLayout>
 
+                    <!-- Gear -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
+                        android:layout_columnWeight="1"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="4dp">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Gear"
-                            android:textStyle="bold" />
+                            android:text="GEAR"
+                            android:textColor="@color/metric_label"
+                            android:textSize="10sp"
+                            android:letterSpacing="0.1" />
 
                         <TextView
                             android:id="@+id/textGear"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="--" />
+                            android:text="--"
+                            android:textColor="@color/metric_value"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
                     </LinearLayout>
-                </LinearLayout>
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:orientation="horizontal">
-
+                    <!-- Temp -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
+                        android:layout_columnWeight="1"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="4dp">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Temperature"
-                            android:textStyle="bold" />
+                            android:text="TEMP"
+                            android:textColor="@color/metric_label"
+                            android:textSize="10sp"
+                            android:letterSpacing="0.1" />
 
                         <TextView
                             android:id="@+id/textTemp"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="--°C" />
+                            android:text="--°C"
+                            android:textColor="@color/metric_value"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
                     </LinearLayout>
 
+                    <!-- Odometer -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
+                        android:layout_columnWeight="1"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="4dp"
+                        android:layout_marginTop="12dp">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Odometer"
-                            android:textStyle="bold" />
+                            android:text="ODO"
+                            android:textColor="@color/metric_label"
+                            android:textSize="10sp"
+                            android:letterSpacing="0.1" />
 
                         <TextView
                             android:id="@+id/textOdometer"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="-- km" />
+                            android:text="-- km"
+                            android:textColor="@color/metric_value"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
                     </LinearLayout>
-                </LinearLayout>
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:orientation="horizontal">
-
+                    <!-- Battery -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
+                        android:layout_columnWeight="1"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="4dp"
+                        android:layout_marginTop="12dp">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Battery Voltage"
-                            android:textStyle="bold" />
+                            android:text="BATTERY"
+                            android:textColor="@color/metric_label"
+                            android:textSize="10sp"
+                            android:letterSpacing="0.1" />
 
                         <TextView
                             android:id="@+id/textBatteryVoltage"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="-- V" />
+                            android:text="-- V"
+                            android:textColor="@color/metric_value"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
                     </LinearLayout>
-                </LinearLayout>
+
+                </GridLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Service Discovery Log -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardDiscoveryLog"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="12dp"
             android:visibility="gone"
-            app:cardElevation="4dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="@color/surface_card"
+            app:cardCornerRadius="12dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/cardTelemetry">
@@ -315,7 +418,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Service Discovery Log"
-                    android:textSize="14sp"
+                    android:textColor="@color/metric_label"
+                    android:textSize="13sp"
                     android:textStyle="bold" />
 
                 <TextView
@@ -324,6 +428,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:fontFamily="monospace"
+                    android:textColor="@color/on_surface_variant"
                     android:textSize="10sp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
